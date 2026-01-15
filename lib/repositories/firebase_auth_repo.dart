@@ -49,6 +49,11 @@ class FirebaseAuthRepo implements AuthRepo {
   // Logout
   @override
   Future<void> logout() async {
+    try {
+      await GoogleSignIn().signOut();
+    } catch (_) {
+      // Handle error if needed
+    }
     await firebaseAuth.signOut();
   }
 
@@ -110,6 +115,8 @@ class FirebaseAuthRepo implements AuthRepo {
 
       // user cancel sign in
       if (firebaseUser == null) return null;
+      final uid = firebaseUser.uid;
+      final email = firebaseUser.email ?? '';
 
       AppUser appUser = AppUser(
         uid: firebaseUser.uid,
