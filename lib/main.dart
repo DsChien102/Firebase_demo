@@ -1,5 +1,6 @@
 import 'package:demo/repositories/firestore_product_repo.dart';
 import 'package:demo/repositories/product_repo.dart';
+import 'package:demo/services/firebase_auth_service.dart';
 import 'package:demo/services/firestore_service.dart';
 import 'package:demo/viewmodels/auth_cubit.dart';
 import 'package:demo/viewmodels/product_viewmodel.dart';
@@ -11,9 +12,11 @@ import 'package:demo/views/home/home_page.dart';
 import 'package:demo/views/common/loading_page.dart';
 import 'package:demo/themes/dark_mode.dart';
 import 'package:demo/themes/light_mode.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -26,7 +29,15 @@ void main() async {
 class MyApp extends StatelessWidget {
   MyApp({super.key});
 
-  final firebaseAuthRepo = FirebaseAuthRepo();
+  // Khởi tạo dependencies theo đúng thứ tự
+  final firebaseAuth = FirebaseAuth.instance;
+  final googleSignIn = GoogleSignIn();
+
+  // Service layer
+  late final firebaseAuthService = FirebaseAuthService(firebaseAuth, googleSignIn);
+
+  // Repository layer (inject service)
+  late final firebaseAuthRepo = FirebaseAuthRepo(firebaseAuthService);
 
   @override
   Widget build(BuildContext context) {

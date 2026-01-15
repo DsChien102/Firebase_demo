@@ -1,74 +1,37 @@
+// lib/repositories/firebase_auth_repo.dart
 import 'package:demo/models/app_user.dart';
 import 'package:demo/repositories/auth_repo.dart';
+import 'package:demo/services/firebase_auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
+/// Repository layer: Chuyển đổi dữ liệu từ Service sang Model
 class FirebaseAuthRepo implements AuthRepo {
-  final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+  FirebaseAuthRepo(this._authService);
 
-  // Login with email and password
+  final FirebaseAuthService _authService;
+
+  /// Convert Firebase User to AppUser
+  AppUser? _mapToAppUser(User? firebaseUser) {
+    if (firebaseUser == null) return null;
+    return AppUser(uid: firebaseUser.uid, email: firebaseUser.email ?? '');
+  }
+
   @override
   Future<AppUser?> loginWithEmailAndPassword(
     String email,
     String password,
   ) async {
     try {
-      UserCredential userCredential = await firebaseAuth
-          .signInWithEmailAndPassword(email: email, password: password);
-      AppUser? user = AppUser(uid: userCredential.user!.uid, email: email);
-      return user;
+      final userCredential = await _authService.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      return _mapToAppUser(userCredential.user);
     } catch (e) {
       throw Exception('Login failed: $e');
     }
   }
 
-  // Delete account
-  @override
-  Future<void> deleteAccount() async {
-    try {
-      final user = firebaseAuth.currentUser;
-      if (user == null) throw Exception('No user is currently signed in.');
-      await user.delete();
-
-      await logout();
-    } catch (e) {
-      throw Exception('Delete account failed: $e');
-    }
-  }
-
-  // Get current user
-  @override
-  Future<AppUser?> getCurrentUser() async {
-    final firebaseUser = firebaseAuth.currentUser;
-
-    if (firebaseUser == null) return null;
-
-    return AppUser(uid: firebaseUser.uid, email: firebaseUser.email!);
-  }
-
-  // Logout
-  @override
-  Future<void> logout() async {
-    try {
-      await GoogleSignIn().signOut();
-    } catch (_) {
-      // Handle error if needed
-    }
-    await firebaseAuth.signOut();
-  }
-
-  // Send password reset email
-  @override
-  Future<String> sendPasswordResetEmail(String email) async {
-    try {
-      await firebaseAuth.sendPasswordResetEmail(email: email);
-      return "Password reset email sent";
-    } catch (e) {
-      throw Exception('Send password reset email failed: $e');
-    }
-  }
-
-  // Register with email and password
   @override
   Future<AppUser?> registerWithEmailAndPassword(
     String name,
@@ -76,56 +39,63 @@ class FirebaseAuthRepo implements AuthRepo {
     String password,
   ) async {
     try {
-      UserCredential userCredential = await firebaseAuth
-          .createUserWithEmailAndPassword(email: email, password: password);
-
-      AppUser user = AppUser(uid: userCredential.user!.uid, email: email);
-      return user;
+      final userCredential = await _authService.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      return _mapToAppUser(userCredential.user);
     } catch (e) {
       throw Exception('Registration failed: $e');
     }
   }
 
-  // Sign in with Google
   @override
   Future<AppUser?> signInWithGoogle() async {
     try {
-      // Trigger the authentication flow
-      final GoogleSignInAccount? gUser = await GoogleSignIn().signIn();
-
-      // user bấm cancel
-      if (gUser == null) return null;
-
-      // Obtain the auth details from the request
-      final GoogleSignInAuthentication gAuth = await gUser.authentication;
-
-      // Create a new credential
-      final credential = GoogleAuthProvider.credential(
-        accessToken: gAuth.accessToken,
-        idToken: gAuth.idToken,
-      );
-
-      // sign in with credential
-      UserCredential userCredential = await firebaseAuth.signInWithCredential(
-        credential,
-      );
-
-      // firebase user
-      final firebaseUser = userCredential.user;
-
-      // user cancel sign in
-      if (firebaseUser == null) return null;
-      final uid = firebaseUser.uid;
-      final email = firebaseUser.email ?? '';
-
-      AppUser appUser = AppUser(
-        uid: firebaseUser.uid,
-        email: firebaseUser.email ?? '',
-      );
-      return appUser;
+      final userCredential = await _authService.signInWithGoogle();
+      return _mapToAppUser(userCredential?.user);
     } catch (e) {
-      print(e);
-      return null;
+      throw Exception('Google sign-in failed: $e');
     }
+  }
+
+  @override
+  Future<void> logout() async {
+    try {
+      await _authService.signOut();
+    } catch (e) {
+      throw Exception('Logout failed: $e');
+    }
+  }
+
+  @override
+  Future<AppUser?> getCurrentUser() async {
+    final firebaseUser = _authService.getCurrentUser();
+    return _mapToAppUser(firebaseUser);
+  }
+
+  @override
+  Future<String> sendPasswordResetEmail(String email) async {
+    try {
+      await _authService.sendPasswordResetEmail(email: email);
+      return "Password reset email sent";
+    } catch (e) {
+      throw Exception('Send password reset email failed: $e');
+    }
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    try {
+      await _authService.deleteCurrentUser();
+      await logout();
+    } catch (e) {
+      throw Exception('Delete account failed: $e');
+    }
+  }
+
+  /// Stream of auth state changes (bonus feature for real-time auth state)
+  Stream<AppUser?> authStateChanges() {
+    return _authService.authStateChanges().map(_mapToAppUser);
   }
 }
