@@ -81,4 +81,13 @@ class FirebaseAuthService {
   Stream<User?> authStateChanges() {
     return _firebaseAuth.authStateChanges();
   }
+
+  /// Update display name
+  Future<void> updateDisplayName(String displayName) async {
+    final user = _firebaseAuth.currentUser;
+    if (user != null) {
+      await user.updateDisplayName(displayName);
+      await user.reload();
+    }
+  }
 }
