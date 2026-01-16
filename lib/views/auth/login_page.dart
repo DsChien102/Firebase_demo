@@ -1,6 +1,7 @@
 import 'package:demo/viewmodels/auth_cubit.dart';
-import 'package:demo/widgets/google_sign_in_bottom.dart';
+import 'package:demo/widgets/google_sign_in_buttom.dart';
 import 'package:demo/widgets/my_bottom.dart';
+
 import 'package:demo/widgets/my_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -146,7 +147,7 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 25),
 
                 // login button
-                MyBottom(onTap: login, text: "LOGIN"),
+                MyButtom(onTap: login, text: "LOGIN"),
 
                 const SizedBox(height: 25),
 
