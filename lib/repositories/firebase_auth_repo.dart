@@ -62,6 +62,12 @@ class FirebaseAuthRepo implements AuthRepo {
       //  get updated user
       final updatedUser = _authService.getCurrentUser();
 
+      await _userService.createUserProfile(
+        uid: updatedUser!.uid,
+        email: updatedUser.email ?? '',
+        displayName: name,
+      );
+
       return _mapToAppUser(updatedUser);
     } catch (e) {
       throw Exception('Registration failed: $e');
