@@ -17,13 +17,27 @@ class FirebaseAuthRepo implements AuthRepo {
   final FirestoreUserService _userService;
 
   /// Convert Firebase User to AppUser
-  AppUser? _mapToAppUser(User? firebaseUser) {
+  Future<AppUser?> _mapToAppUserWithRole(User? firebaseUser) async {
     if (firebaseUser == null) return null;
+
+    // lay role tu firestore user profile
+    try {
+      final doc = await _userService.getUserProfile(firebaseUser.uid);
+      final data = doc.data();
+      if (data != null) {
+        return AppUser.fromFirestore(data);
+      }
+    } catch (e) {
+      print('Error fetching user profile: $e');
+    }
+
+    // fallback neu khong co profile
     return AppUser(
       uid: firebaseUser.uid,
       email: firebaseUser.email ?? '',
       displayName: firebaseUser.displayName,
-      createdAt: (firebaseUser.metadata.creationTime),
+      createdAt: firebaseUser.metadata.creationTime,
+      role: UserRole.user,
     );
   }
 
@@ -37,7 +51,7 @@ class FirebaseAuthRepo implements AuthRepo {
         email: email,
         password: password,
       );
-      return _mapToAppUser(userCredential.user);
+      return await _mapToAppUserWithRole(userCredential.user);
     } catch (e) {
       throw Exception('Login failed: $e');
     }
@@ -54,21 +68,24 @@ class FirebaseAuthRepo implements AuthRepo {
         email: email,
         password: password,
       );
-      if (userCredential.user != null) {
-        // Update display name
-        await _authService.updateDisplayName(name);
+      final user = userCredential.user;
+      if (user == null) {
+        throw Exception('User registration failed');
       }
+      await _authService.updateDisplayName(name);
+
+      // create user profile voi rule mac dinh
+      await _userService.createUserProfile(
+        uid: user.uid,
+        email: email,
+        displayName: name,
+        role: 'user',
+      );
 
       //  get updated user
       final updatedUser = _authService.getCurrentUser();
 
-      await _userService.createUserProfile(
-        uid: updatedUser!.uid,
-        email: updatedUser.email ?? '',
-        displayName: name,
-      );
-
-      return _mapToAppUser(updatedUser);
+      return await _mapToAppUserWithRole(updatedUser);
     } catch (e) {
       throw Exception('Registration failed: $e');
     }
@@ -78,7 +95,25 @@ class FirebaseAuthRepo implements AuthRepo {
   Future<AppUser?> signInWithGoogle() async {
     try {
       final userCredential = await _authService.signInWithGoogle();
-      return _mapToAppUser(userCredential?.user);
+
+      if (userCredential == null) return null;
+
+      final user = userCredential.user;
+      if (user == null) return null;
+
+      final exists = await _userService.userProfileExists(user.uid);
+
+      if (!exists) {
+        await _userService.createUserProfile(
+          uid: user.uid,
+          email: user.email ?? '',
+          displayName: user.displayName,
+          role: 'user', // ← Mặc định là user
+        );
+      }
+
+      // ✅ Lấy role từ Firestore
+      return await _mapToAppUserWithRole(user);
     } catch (e) {
       throw Exception('Google sign-in failed: $e');
     }
@@ -96,7 +131,7 @@ class FirebaseAuthRepo implements AuthRepo {
   @override
   Future<AppUser?> getCurrentUser() async {
     final firebaseUser = _authService.getCurrentUser();
-    return _mapToAppUser(firebaseUser);
+    return await _mapToAppUserWithRole(firebaseUser);
   }
 
   @override
@@ -121,6 +156,6 @@ class FirebaseAuthRepo implements AuthRepo {
 
   /// Stream of auth state changes (bonus feature for real-time auth state)
   Stream<AppUser?> authStateChanges() {
-    return _authService.authStateChanges().map(_mapToAppUser);
+    return _authService.authStateChanges().asyncMap(_mapToAppUserWithRole);
   }
 }

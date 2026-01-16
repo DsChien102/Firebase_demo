@@ -15,11 +15,13 @@ class FirestoreUserService {
     required String uid,
     required String email,
     String? displayName,
+    String role = 'user',
   }) {
     return _usersRef.doc(uid).set({
       'uid': uid,
       'email': email,
       'displayName': displayName,
+      'role': role,
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
@@ -35,11 +37,13 @@ class FirestoreUserService {
     required String uid,
     String? email,
     String? displayName,
+    String? role,
   }) {
     final data = <String, dynamic>{'updatedAt': FieldValue.serverTimestamp()};
 
     if (email != null) data['email'] = email;
     if (displayName != null) data['displayName'] = displayName;
+    if (role != null) data['role'] = role;
 
     return _usersRef.doc(uid).update(data);
   }

@@ -22,7 +22,7 @@ class ProductsViewModel extends ChangeNotifier {
 
   Future<void> add({
     required String name,
-    required num price,
+    required String price,
     required String description,
   }) {
     final p = AppProduct(
@@ -37,7 +37,7 @@ class ProductsViewModel extends ChangeNotifier {
   Future<void> update({
     required String id,
     required String name,
-    required num price,
+    required String price,
     required String description,
   }) {
     final p = AppProduct(

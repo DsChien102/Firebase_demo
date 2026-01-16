@@ -1,5 +1,7 @@
 import 'package:demo/models/app_products.dart';
+import 'package:demo/models/app_user.dart';
 import 'package:demo/viewmodels/auth_cubit.dart';
+import 'package:demo/viewmodels/auth_states.dart';
 import 'package:demo/viewmodels/product_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -14,9 +16,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   Future<void> _showProductDialog({AppProduct? editing}) async {
     final nameCtrl = TextEditingController(text: editing?.name ?? '');
-    final priceCtrl = TextEditingController(
-      text: editing == null ? '' : editing.price.toString(),
-    );
+    final priceCtrl = TextEditingController(text: editing?.price ?? '');
     final descCtrl = TextEditingController(text: editing?.description ?? '');
 
     final isEdit = editing != null;
@@ -69,10 +69,10 @@ class _HomePageState extends State<HomePage> {
             FilledButton(
               onPressed: () async {
                 final name = nameCtrl.text.trim();
-                final price = num.tryParse(priceCtrl.text.trim());
+                final price = priceCtrl.text.trim();
                 final description = descCtrl.text.trim();
 
-                if (name.isEmpty || price == null) {
+                if (name.isEmpty || price.isEmpty) {
                   return;
                 }
                 final vm = context.read<ProductsViewModel>();
@@ -139,6 +139,13 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<ProductsViewModel>();
+    final authState = context.watch<AuthCubit>().state;
+    AppUser? currentUser;
+    if (authState is Authenticated) {
+      currentUser = authState.user;
+    }
+    final isAdmin = currentUser?.isAdmin ?? false; // check admin
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Products'),
@@ -152,11 +159,16 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showProductDialog(),
-        icon: const Icon(Icons.add),
-        label: const Text('Add'),
-      ),
+
+      floatingActionButton: isAdmin
+          ? FloatingActionButton.extended(
+              onPressed: () => _showProductDialog(),
+              icon: const Icon(Icons.add),
+              label: const Text('Add'),
+            )
+          : null,
+
+      // body
       body: Column(
         children: [
           Padding(
@@ -198,9 +210,7 @@ class _HomePageState extends State<HomePage> {
                     return ListTile(
                       title: Text(p.name.isEmpty ? '(No Name)' : p.name),
                       subtitle: Text(
-                        p.description.isEmpty
-                            ? '(No Description)'
-                            : p.description,
+                        p.description.isEmpty ? '' : p.description,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -208,20 +218,22 @@ class _HomePageState extends State<HomePage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            p.price.toString(),
+                            p.price,
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(width: 12),
-                          IconButton(
-                            tooltip: 'Edit',
-                            onPressed: () => _showProductDialog(editing: p),
-                            icon: const Icon(Icons.edit),
-                          ),
-                          IconButton(
-                            tooltip: 'Delete',
-                            onPressed: () => _confirmDelete(p),
-                            icon: const Icon(Icons.delete),
-                          ),
+                          if (isAdmin) ...[
+                            IconButton(
+                              tooltip: 'Edit',
+                              onPressed: () => _showProductDialog(editing: p),
+                              icon: const Icon(Icons.edit),
+                            ),
+                            IconButton(
+                              tooltip: 'Delete',
+                              onPressed: () => _confirmDelete(p),
+                              icon: const Icon(Icons.delete),
+                            ),
+                          ],
                         ],
                       ),
                     );

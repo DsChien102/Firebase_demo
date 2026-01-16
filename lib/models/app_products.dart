@@ -1,7 +1,7 @@
 class AppProduct {
   final String id;
   final String name;
-  final num price;
+  final String price;
   final String description;
 
   const AppProduct({
@@ -29,7 +29,7 @@ class AppProduct {
     return AppProduct(
       id: id,
       name: map['name'],
-      price: price,
+      price: map['price'].toString(),
       description: map['description'],
     );
   }
