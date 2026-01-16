@@ -2,6 +2,7 @@ import 'package:demo/repositories/firestore_product_repo.dart';
 import 'package:demo/repositories/product_repo.dart';
 import 'package:demo/services/firebase_auth_service.dart';
 import 'package:demo/services/firestore_service.dart';
+import 'package:demo/services/firestore_user_service.dart';
 import 'package:demo/viewmodels/auth_cubit.dart';
 import 'package:demo/viewmodels/product_viewmodel.dart';
 import 'package:demo/views/auth/auth_page.dart';
@@ -32,12 +33,20 @@ class MyApp extends StatelessWidget {
   // Khởi tạo dependencies theo đúng thứ tự
   final firebaseAuth = FirebaseAuth.instance;
   final googleSignIn = GoogleSignIn();
+  final firestore = FirebaseFirestore.instance;
 
   // Service layer
-  late final firebaseAuthService = FirebaseAuthService(firebaseAuth, googleSignIn);
+  late final firebaseAuthService = FirebaseAuthService(
+    firebaseAuth,
+    googleSignIn,
+  );
+  late final firestoreUserService = FirestoreUserService(firestore);
 
   // Repository layer (inject service)
-  late final firebaseAuthRepo = FirebaseAuthRepo(firebaseAuthService);
+  late final firebaseAuthRepo = FirebaseAuthRepo(
+    authService: firebaseAuthService,
+    userService: firestoreUserService,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +54,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         Provider<FirestoreProductService>(
-          create: (_) => FirestoreProductService(FirebaseFirestore.instance),
+          create: (_) => FirestoreProductService(firestore),
         ),
         Provider<ProductRepository>(
           create: (context) => FirestoreProductRepository(

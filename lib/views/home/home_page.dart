@@ -117,7 +117,8 @@ class _HomePageState extends State<HomePage> {
         content: Text("Delete '${p.name}' "),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Delete'),
           ),
         ],

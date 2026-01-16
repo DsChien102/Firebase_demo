@@ -2,18 +2,29 @@
 import 'package:demo/models/app_user.dart';
 import 'package:demo/repositories/auth_repo.dart';
 import 'package:demo/services/firebase_auth_service.dart';
+import 'package:demo/services/firestore_user_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 /// Repository layer: Chuyển đổi dữ liệu từ Service sang Model
 class FirebaseAuthRepo implements AuthRepo {
-  FirebaseAuthRepo(this._authService);
+  FirebaseAuthRepo({
+    required FirebaseAuthService authService,
+    required FirestoreUserService userService,
+  }) : _authService = authService,
+       _userService = userService;
 
   final FirebaseAuthService _authService;
+  final FirestoreUserService _userService;
 
   /// Convert Firebase User to AppUser
   AppUser? _mapToAppUser(User? firebaseUser) {
     if (firebaseUser == null) return null;
-    return AppUser(uid: firebaseUser.uid, email: firebaseUser.email ?? '');
+    return AppUser(
+      uid: firebaseUser.uid,
+      email: firebaseUser.email ?? '',
+      displayName: firebaseUser.displayName,
+      createdAt: (firebaseUser.metadata.creationTime),
+    );
   }
 
   @override
@@ -49,9 +60,9 @@ class FirebaseAuthRepo implements AuthRepo {
       }
 
       //  get updated user
-      final updatedUder = await _authService.getCurrentUser();
+      final updatedUser = _authService.getCurrentUser();
 
-      return _mapToAppUser(userCredential.user);
+      return _mapToAppUser(updatedUser);
     } catch (e) {
       throw Exception('Registration failed: $e');
     }
