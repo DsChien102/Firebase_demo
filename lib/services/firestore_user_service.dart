@@ -1,16 +1,17 @@
-// lib/services/firestore_user_service.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// Service layer: Giao tiếp với Firestore để quản lý user documents
+// Giao tiep voi Firestore de quan ly thong tin nguoi dung
 class FirestoreUserService {
   FirestoreUserService(this._db);
 
+  // khoi tao Firestore instance
   final FirebaseFirestore _db;
 
+  // tra ve tham chieu den collection 'users'
   CollectionReference<Map<String, dynamic>> get _usersRef =>
       _db.collection("users");
 
-  /// Create user profile in Firestore
+  // Create user profile in Firestore
   Future<void> createUserProfile({
     required String uid,
     required String email,
@@ -27,12 +28,12 @@ class FirestoreUserService {
     });
   }
 
-  /// Get user profile from Firestore
+  // Get user profile from document
   Future<DocumentSnapshot<Map<String, dynamic>>> getUserProfile(String uid) {
     return _usersRef.doc(uid).get();
   }
 
-  /// Update user profile
+  // Update user profile
   Future<void> updateUserProfile({
     required String uid,
     String? email,
@@ -48,12 +49,12 @@ class FirestoreUserService {
     return _usersRef.doc(uid).update(data);
   }
 
-  /// Delete user profile
+  // Delete user profile
   Future<void> deleteUserProfile(String uid) {
     return _usersRef.doc(uid).delete();
   }
 
-  /// Check if user profile exists
+  // Check if user profile exists
   Future<bool> userProfileExists(String uid) async {
     final doc = await _usersRef.doc(uid).get();
     return doc.exists;

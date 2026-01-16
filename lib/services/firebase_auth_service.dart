@@ -1,15 +1,14 @@
-// lib/services/firebase_auth_service.dart
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-/// Service layer: Giao tiếp trực tiếp với Firebase Auth và Google Sign-In
+// Service layer : giao tiep voi Firebase Auth và Google Sign-In
 class FirebaseAuthService {
   FirebaseAuthService(this._firebaseAuth, this._googleSignIn);
 
   final FirebaseAuth _firebaseAuth;
   final GoogleSignIn _googleSignIn;
 
-  /// Sign in with email and password
+  // Sign in with email and password
   Future<UserCredential> signInWithEmailAndPassword({
     required String email,
     required String password,
@@ -20,7 +19,7 @@ class FirebaseAuthService {
     );
   }
 
-  /// Create user with email and password
+  // Create user with email and password
   Future<UserCredential> createUserWithEmailAndPassword({
     required String email,
     required String password,
@@ -31,9 +30,8 @@ class FirebaseAuthService {
     );
   }
 
-  /// Sign in with Google
+  // Sign in with Google
   Future<UserCredential?> signInWithGoogle() async {
-    // Trigger the authentication flow
     final GoogleSignInAccount? gUser = await _googleSignIn.signIn();
 
     // User cancelled
@@ -52,18 +50,18 @@ class FirebaseAuthService {
     return _firebaseAuth.signInWithCredential(credential);
   }
 
-  /// Send password reset email
+  // Send password reset email
   Future<void> sendPasswordResetEmail({required String email}) {
     return _firebaseAuth.sendPasswordResetEmail(email: email);
   }
 
-  /// Sign out from both Firebase and Google
+  // Sign out from both Firebase and Google
   Future<void> signOut() async {
     await _googleSignIn.signOut();
     await _firebaseAuth.signOut();
   }
 
-  /// Delete current user
+  // Delete current user
   Future<void> deleteCurrentUser() async {
     final user = _firebaseAuth.currentUser;
     if (user == null) {
@@ -72,17 +70,17 @@ class FirebaseAuthService {
     return user.delete();
   }
 
-  /// Get current Firebase user
+  // Get current Firebase user
   User? getCurrentUser() {
     return _firebaseAuth.currentUser;
   }
 
-  /// Stream of auth state changes
+  // Stream of auth state changes
   Stream<User?> authStateChanges() {
     return _firebaseAuth.authStateChanges();
   }
 
-  /// Update display name
+  // Update display name
   Future<void> updateDisplayName(String displayName) async {
     final user = _firebaseAuth.currentUser;
     if (user != null) {

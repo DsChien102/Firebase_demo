@@ -4,6 +4,7 @@ class GoogleSignInBottom extends StatelessWidget {
   final void Function()? onTap;
   const GoogleSignInBottom({super.key, required this.onTap});
 
+  // gg sign in button UI
   @override
   Widget build(BuildContext context) {
     return GestureDetector(

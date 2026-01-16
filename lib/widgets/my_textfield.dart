@@ -12,6 +12,7 @@ class MyTextfield extends StatelessWidget {
     required this.obscureText,
   });
 
+  // custom textfield UI
   @override
   Widget build(BuildContext context) {
     return TextField(

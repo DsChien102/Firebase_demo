@@ -1,11 +1,10 @@
-// lib/repositories/firebase_auth_repo.dart
 import 'package:demo/models/app_user.dart';
 import 'package:demo/repositories/auth_repo.dart';
 import 'package:demo/services/firebase_auth_service.dart';
 import 'package:demo/services/firestore_user_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-/// Repository layer: Chuyển đổi dữ liệu từ Service sang Model
+// Repository layer: Chuyển đổi dữ liệu từ Service sang Model
 class FirebaseAuthRepo implements AuthRepo {
   FirebaseAuthRepo({
     required FirebaseAuthService authService,
@@ -42,6 +41,7 @@ class FirebaseAuthRepo implements AuthRepo {
   }
 
   @override
+  // Authentication with email and password
   Future<AppUser?> loginWithEmailAndPassword(
     String email,
     String password,
@@ -58,6 +58,7 @@ class FirebaseAuthRepo implements AuthRepo {
   }
 
   @override
+  // Registration with email and password
   Future<AppUser?> registerWithEmailAndPassword(
     String name,
     String email,
@@ -92,6 +93,7 @@ class FirebaseAuthRepo implements AuthRepo {
   }
 
   @override
+  // Sign in with Google
   Future<AppUser?> signInWithGoogle() async {
     try {
       final userCredential = await _authService.signInWithGoogle();
@@ -120,6 +122,7 @@ class FirebaseAuthRepo implements AuthRepo {
   }
 
   @override
+  // Logout
   Future<void> logout() async {
     try {
       await _authService.signOut();
@@ -129,12 +132,14 @@ class FirebaseAuthRepo implements AuthRepo {
   }
 
   @override
+  // Get current user
   Future<AppUser?> getCurrentUser() async {
     final firebaseUser = _authService.getCurrentUser();
     return await _mapToAppUserWithRole(firebaseUser);
   }
 
   @override
+  // Send password reset email
   Future<String> sendPasswordResetEmail(String email) async {
     try {
       await _authService.sendPasswordResetEmail(email: email);
@@ -144,6 +149,7 @@ class FirebaseAuthRepo implements AuthRepo {
     }
   }
 
+  // Delete user account
   @override
   Future<void> deleteAccount() async {
     try {
@@ -154,7 +160,7 @@ class FirebaseAuthRepo implements AuthRepo {
     }
   }
 
-  /// Stream of auth state changes (bonus feature for real-time auth state)
+  /// Stream of auth state changes with AppUser
   Stream<AppUser?> authStateChanges() {
     return _authService.authStateChanges().asyncMap(_mapToAppUserWithRole);
   }

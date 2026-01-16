@@ -20,6 +20,7 @@ class AppProduct {
     };
   }
 
+  // convert tu map to AppProduct
   static AppProduct fromMap(String id, Map<String, dynamic> map) {
     final rawPrice = map['price'];
     final price = rawPrice is num

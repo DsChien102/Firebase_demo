@@ -22,6 +22,7 @@ import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 void main() async {
+  // initialize firebase
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(MyApp());
@@ -30,19 +31,19 @@ void main() async {
 class MyApp extends StatelessWidget {
   MyApp({super.key});
 
-  // Khởi tạo dependencies theo đúng thứ tự
+  // init firebase instances
   final firebaseAuth = FirebaseAuth.instance;
   final googleSignIn = GoogleSignIn();
   final firestore = FirebaseFirestore.instance;
 
-  // Service layer
+  // Service layer giao tiep truc tiep voi firebase
   late final firebaseAuthService = FirebaseAuthService(
     firebaseAuth,
     googleSignIn,
   );
   late final firestoreUserService = FirestoreUserService(firestore);
 
-  // Repository layer (inject service)
+  // Repository layer ket noi authservice va userservice
   late final firebaseAuthRepo = FirebaseAuthRepo(
     authService: firebaseAuthService,
     userService: firestoreUserService,
@@ -53,6 +54,7 @@ class MyApp extends StatelessWidget {
     // setup auth cubit and product viewmodel with providers
     return MultiProvider(
       providers: [
+        // vỉewmodel
         Provider<FirestoreProductService>(
           create: (_) => FirestoreProductService(firestore),
         ),

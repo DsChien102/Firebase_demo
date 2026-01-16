@@ -82,8 +82,6 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     // Scaffold
     return Scaffold(
-      // AppBar
-
       // body
       body: SafeArea(
         child: Center(
@@ -109,7 +107,9 @@ class _LoginPageState extends State<LoginPage> {
                     color: Theme.of(context).colorScheme.inversePrimary,
                   ),
                 ),
+
                 const SizedBox(height: 20),
+
                 // email input
                 MyTextfield(
                   controller: emailController,
@@ -125,6 +125,7 @@ class _LoginPageState extends State<LoginPage> {
                   hintText: "Password",
                   obscureText: true,
                 ),
+                
                 const SizedBox(height: 10),
 
                 // forgot password

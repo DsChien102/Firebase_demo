@@ -13,6 +13,7 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  // controllers
   final nameController = TextEditingController();
   final emailController = TextEditingController();
   final pwController = TextEditingController();
@@ -129,6 +130,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
               // outh w gg
               const SizedBox(height: 40),
+              
               // don't have account
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,

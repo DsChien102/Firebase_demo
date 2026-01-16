@@ -4,9 +4,11 @@ import 'package:demo/repositories/auth_repo.dart';
 import 'package:demo/viewmodels/auth_states.dart';
 
 class AuthCubit extends Cubit<AuthState> {
+  // khai bao dependency
   final AuthRepo authRepo;
   AppUser? _currentUser;
 
+  // constructor
   AuthCubit({required this.authRepo}) : super(AuthInitial());
 
   // get current user

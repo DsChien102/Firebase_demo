@@ -14,13 +14,15 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  // preare add/edit product dialog
   Future<void> _showProductDialog({AppProduct? editing}) async {
     final nameCtrl = TextEditingController(text: editing?.name ?? '');
     final priceCtrl = TextEditingController(text: editing?.price ?? '');
     final descCtrl = TextEditingController(text: editing?.description ?? '');
 
-    final isEdit = editing != null;
+    final isEdit = editing != null; // add or edit
 
+    //  show dialog for add/edit
     await showDialog<void>(
       context: context,
       builder: (dialogContext) {
@@ -56,7 +58,7 @@ class _HomePageState extends State<HomePage> {
                     border: OutlineInputBorder(),
                   ),
                   minLines: 2,
-                  maxLines: 4,
+                  maxLines: 3,
                 ),
               ],
             ),
@@ -77,6 +79,7 @@ class _HomePageState extends State<HomePage> {
                 }
                 final vm = context.read<ProductsViewModel>();
 
+                // call action for mode
                 try {
                   if (isEdit) {
                     await vm.update(
@@ -109,6 +112,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // confirm delete product
   Future<void> _confirmDelete(AppProduct p) async {
     final ok = await showDialog(
       context: context,
@@ -138,7 +142,9 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // get view model
     final vm = context.watch<ProductsViewModel>();
+    // check if current user is admin
     final authState = context.watch<AuthCubit>().state;
     AppUser? currentUser;
     if (authState is Authenticated) {
@@ -151,6 +157,7 @@ class _HomePageState extends State<HomePage> {
         title: const Text('Products'),
         actions: [
           IconButton(
+            // logout action
             onPressed: () {
               final authCubit = context.read<AuthCubit>();
               authCubit.logout();
@@ -160,6 +167,7 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
 
+      //  floarting action button for add product
       floatingActionButton: isAdmin
           ? FloatingActionButton.extended(
               onPressed: () => _showProductDialog(),
@@ -174,6 +182,7 @@ class _HomePageState extends State<HomePage> {
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
             child: TextField(
+              // search products
               onChanged: vm.setSearchTerm,
               decoration: InputDecoration(
                 hintText: 'Search products',
@@ -190,6 +199,7 @@ class _HomePageState extends State<HomePage> {
           ),
           Expanded(
             child: StreamBuilder(
+              // list products from stream
               stream: vm.productsStream,
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
@@ -202,6 +212,7 @@ class _HomePageState extends State<HomePage> {
                 if (items.isEmpty) {
                   return const Center(child: Text('No products'));
                 }
+                // render list again
                 return ListView.separated(
                   itemCount: items.length,
                   separatorBuilder: (_, _) => const Divider(height: 1),
